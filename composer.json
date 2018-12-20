@@ -11,8 +11,7 @@
     "require": {
         "guzzlehttp/guzzle": "^6.3",
         "pimple/pimple": "~3.0",
-        "adbario/php-dot-notation": "^2.1",
-        "symfony/cache": "^3.3"
+        "adbario/php-dot-notation": "^2.1"
     },
     "require-dev": {
         "mockery/mockery": "^0.9.9",

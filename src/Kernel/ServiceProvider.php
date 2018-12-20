@@ -15,7 +15,6 @@ use Pimple\Container;
 use GuzzleHttp\Client as GuzzleHttp;
 use Pimple\ServiceProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Cache\Simple\FilesystemCache;
 
 /**
  * Class ServiceProvider.
@@ -44,8 +43,8 @@ class ServiceProvider implements ServiceProviderInterface
             return new Credential($app);
         };
 
-        $app['cache'] = function () {
+        /*$app['cache'] = function () {
             return new FilesystemCache();
-        };
+        };*/
     }
 }
