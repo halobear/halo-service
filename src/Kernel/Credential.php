@@ -100,7 +100,7 @@ class Credential
         }
         $credentials        = $this->credentials();
         $protected_key_path = $protected_key_path ?: $credentials['key_path'];
-        $tool_path          = $tool_path ?: base_path('vendor/guansq/tencent-im/src/Command/linux-signature64');
+        $tool_path          = $tool_path ?: base_path('vendor/halobear/tencent-im/src/Command/linux-signature64');
         # 这里需要写绝对路径，开发者根据自己的路径进行调整
         $command = escapeshellarg($tool_path) . ' ' . escapeshellarg($protected_key_path) . ' ' . escapeshellarg($credentials['app_id']) . ' ' . escapeshellarg($identifier);
         $ret     = exec($command, $out, $status);
