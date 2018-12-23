@@ -14,7 +14,7 @@ namespace TencentIm\User;
 use TencentIm\Kernel\BaseClient;
 
 /**
- * Class Client.
+ * Class Client1.
  *
  * @author guansq <94600115@qq.com>
  */
