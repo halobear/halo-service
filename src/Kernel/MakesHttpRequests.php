@@ -38,6 +38,20 @@ trait MakesHttpRequests
     }
 
     /**
+     * @param string $method
+     * @param string $uri
+     * @param array  $options
+     *
+     * @return array|\GuzzleHttp\Psr7\Response
+     */
+    public function requestAsync(string $method, string $uri, array $options = [])
+    {
+        $response = $this->app['http_client']->requestAsync($method, $uri, $options);
+
+        //return $this->transform ? $this->transformResponse($response) : $response;
+    }
+
+    /**
      * @return $this
      */
     public function dontTransform()
@@ -57,9 +71,8 @@ trait MakesHttpRequests
     protected function transformResponse($response): array
     {
         $result = json_decode($response->getBody()->getContents(), true);
-
-        if (isset($result['errcode']) && $result['errcode'] !== 0) {
-            throw new Exceptions\ClientError($result['errmsg'], $result['errcode']);
+        if (isset($result['ErrorCode']) && $result['ErrorCode'] !== 0) {
+            throw new Exceptions\ClientError($result['ErrorInfo'], $result['ErrorCode']);
         }
 
         if (isset($result['error_response'])) {

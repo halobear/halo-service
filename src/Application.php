@@ -19,19 +19,11 @@ use Pimple\Container;
  * @author guansq <94600115@qq.com>
  *
  * @property \TencentIm\Auth\Client         $auth
- * @property \TencentIm\Chat\Client         $chat
- * @property \TencentIm\Role\Client         $role
  * @property \TencentIm\User\Client         $user
- * @property \TencentIm\Media\Client        $media
- * @property \TencentIm\Jssdk\Client        $jssdk
- * @property \TencentIm\Report\Client       $report
- * @property \TencentIm\Checkin\Client      $checkin
  * @property \TencentIm\Message\Client      $message
- * @property \TencentIm\Process\Client      $process
- * @property \TencentIm\Microapp\Client     $microapp
- * @property \TencentIm\Attendance\Client   $attendance
+ * @property \TencentIm\Relation\Client     $relation
+ * @property \TencentIm\Group\Client        $group
  * @property \TencentIm\Kernel\Credential   $credential
- * @property \TencentIm\Department\Client   $department
  * @property \TencentIm\Message\AsyncClient $async_message
  */
 class Application extends Container
@@ -40,20 +32,12 @@ class Application extends Container
      * @var array
      */
     protected $providers = [
-        // Auth\ServiceProvider::class,
-        // Chat\ServiceProvider::class,
-        // Role\ServiceProvider::class,
-        // User\ServiceProvider::class,
-        // Jssdk\ServiceProvider::class,
-        // Media\ServiceProvider::class,
+        Auth\ServiceProvider::class,
+        User\ServiceProvider::class,
         Kernel\ServiceProvider::class,
-        // Report\ServiceProvider::class,
-        // Checkin\ServiceProvider::class,
-        // Message\ServiceProvider::class,
-        // Process\ServiceProvider::class,
-        // Microapp\ServiceProvider::class,
-        // Attendance\ServiceProvider::class,
-        // Department\ServiceProvider::class,
+        Message\ServiceProvider::class,
+        Relation\ServiceProvider::class,
+        Group\ServiceProvider::class,
     ];
 
     /**

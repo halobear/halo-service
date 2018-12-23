@@ -1,5 +1,5 @@
 {
-    "name": "guansq\/tencent-im",
+    "name": "halobear\/tencent-im",
     "description": "A TENCENT-IM SDK",
     "license": "MIT",
     "authors": [
@@ -23,6 +23,20 @@
         },
         "files": [
             "src/Kernel/Support/helpers.php"
+        ]
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "sudo chmod 777 -R ./src/Command",
+            "sudo chmod 777 -R ./src/Command/*"
+        ],
+        "post-package-install": [
+            "sudo chmod 777 -R ./src/Command",
+            "sudo chmod 777 -R ./src/Command/*"
+        ],
+        "post-package-update": [
+            "sudo chmod 777 -R ./src/Command",
+            "sudo chmod 777 -R ./src/Command/*"
         ]
     }
 }

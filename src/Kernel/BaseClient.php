@@ -30,7 +30,7 @@ class BaseClient
      */
     protected $app;
 
-    protected $dingtalkHandlerStack;
+    protected $tencentImHandlerStack;
 
     protected $taobaoHandlerStack;
 
@@ -52,7 +52,7 @@ class BaseClient
      */
     public function httpGet(string $uri, array $query = [])
     {
-        return $this->requestDingTalk('GET', $uri, [RequestOptions::QUERY => $query]);
+        return $this->requestTencentIm('GET', $uri, [RequestOptions::QUERY => $query]);
     }
 
     /**
@@ -66,9 +66,43 @@ class BaseClient
      */
     public function httpPostJson(string $uri, array $json = [], array $query = [])
     {
-        return $this->requestDingTalk('POST', $uri, [
+        return $this->requestTencentIm('POST', $uri, [
             RequestOptions::QUERY => $query,
-            RequestOptions::JSON => $json,
+            RequestOptions::JSON  => $json,
+        ]);
+    }
+
+    /**
+     * Make a post request.
+     *
+     * @param string $uri
+     * @param array  $json
+     * @param array  $query
+     *
+     * @return array|\GuzzleHttp\Psr7\Response
+     */
+    public function httpAsyncPostJson(string $uri, array $json = [], array $query = [])
+    {
+        return $this->requestAsyncTencentIm('POST', $uri, [
+            RequestOptions::QUERY => $query,
+            RequestOptions::JSON  => $json,
+        ]);
+    }
+
+    /**
+     * Make a get request.
+     *
+     * @param string $uri
+     * @param array  $json
+     * @param array  $query
+     *
+     * @return array|\GuzzleHttp\Psr7\Response
+     */
+    public function httpGetJson(string $uri, array $json = [], array $query = [])
+    {
+        return $this->requestTencentIm('GET', $uri, [
+            RequestOptions::QUERY => $query,
+            RequestOptions::JSON  => $json,
         ]);
     }
 
@@ -87,83 +121,78 @@ class BaseClient
 
         foreach ($files as $name => $path) {
             $multipart[] = [
-                'name' => $name,
+                'name'     => $name,
                 'contents' => fopen($path, 'r'),
             ];
         }
 
-        return $this->requestDingTalk('POST', $uri, [
-            RequestOptions::QUERY => $query,
+        return $this->requestTencentIm('POST', $uri, [
+            RequestOptions::QUERY     => $query,
             RequestOptions::MULTIPART => $multipart,
         ]);
     }
 
-    /**
-     * @param string $method
-     * @param array  $query
-     *
-     * @return array|\GuzzleHttp\Psr7\Response
-     */
-    public function httpGetMethod(string $method, array $query = [])
-    {
-        $query = compact('method') + $query;
-
-        return $this->requestTaobao('GET', compact('query'));
-    }
 
     /**
-     * @param $method
-     * @param $uri
+     * @param       $method
+     * @param       $uri
      * @param array $options
      *
      * @return array|\GuzzleHttp\Psr7\Response
      */
-    protected function requestDingTalk($method, $uri, array $options = [])
+    protected function requestTencentIm($method, $uri, array $options = [])
     {
-        if (! $handler = $this->dingtalkHandlerStack) {
+        if (!$handler = $this->tencentImHandlerStack) {
             $handler = HandlerStack::create();
 
             $handler->push(function (callable $handler) {
                 return function (RequestInterface $request, array $options) use ($handler) {
-                    return $handler($this->concat($request, ['access_token' => $this->app['credential']->token()]), $options);
+                    return $handler($this->concat($request, [
+                        'usersig'     => $this->app['credential']->token(),
+                        'identifier'  => $this->app['config']->get('identifier'),
+                        'sdkappid'    => $this->app['config']->get('app_id'),
+                        'random'      => str_random(32),
+                        'contenttype' => 'json',
+                    ]), $options);
                 };
             });
 
-            $this->dingtalkHandlerStack = $handler;
+            $this->tencentImHandlerStack = $handler;
         }
 
         return $this->request($method, $uri, $options + compact('handler'));
     }
 
     /**
-     * @param $method
+     * @param       $method
+     * @param       $uri
      * @param array $options
      *
      * @return array|\GuzzleHttp\Psr7\Response
      */
-    protected function requestTaobao($method, array $options = [])
+    protected function requestAsyncTencentIm($method, $uri, array $options = [])
     {
-        if (! $handler = $this->taobaoHandlerStack) {
+        if (!$handler = $this->tencentImHandlerStack) {
             $handler = HandlerStack::create();
+
             $handler->push(function (callable $handler) {
                 return function (RequestInterface $request, array $options) use ($handler) {
-                    $query = [
-                        'session' => $this->app['credential']->token(),
-                        'timestamp' => date('Y-m-d H:i:s'),
-                        'format' => 'json',
-                        'v' => '2.0',
-                        'partner_id' => null,
-                        'simplify' => 'true',
-                    ];
-
-                    return $handler($this->concat($request, $query), $options);
+                    return $handler($this->concat($request, [
+                        'usersig'     => $this->app['credential']->token(),
+                        'identifier'  => $this->app['config']->get('identifier'),
+                        'sdkappid'    => $this->app['config']->get('app_id'),
+                        'random'      => str_random(32),
+                        'contenttype' => 'json',
+                    ]), $options);
                 };
             });
-            $this->taobaoHandlerStack = $handler;
+
+            $this->tencentImHandlerStack = $handler;
         }
 
-        return $this->request($method, 'https://eco.taobao.com/router/rest', $options + compact('handler'));
+        return $this->requestAsync($method, $uri, $options + compact('handler'));
     }
+
 
     /**
      * @param \Psr\Http\Message\RequestInterface $request
