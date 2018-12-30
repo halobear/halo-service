@@ -134,4 +134,19 @@ class Client extends BaseClient
 
         return $ret;
     }
+
+    /**
+     * 得到用户状态
+     */
+    public function get_user_status($account_ids)
+    {
+        #构造新消息
+        $msg = [
+            'To_Account' => $account_ids,
+        ];
+
+        $ret = $this->httpPostJson('v4/openim/querystate', $msg);
+
+        return $ret;
+    }
 }

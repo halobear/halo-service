@@ -52,7 +52,7 @@ class Credential
             return $value;
         }
 
-        $token = $this->generate_user_sig($this->identifier);// 重新生成usersig
+        $token = $this->generate_user_sig($this->app['config']['identifier']);// 重新生成usersig
 
         $this->setToken($token, 86400);
 

@@ -413,4 +413,23 @@ class Client extends BaseClient
 
         return $ret;
     }
+
+    /**
+     * 获取消息记录
+     * @param string $msg_time 接收消息的用户id集合
+     *
+     * @return array 通过解析REST接口json返回包得到的关联数组, 其中包含成功与否、及错误提示(如果有错误)等字段
+     */
+    public function get_history($msg_time)
+    {
+        #构造新消息
+        $msg = [
+            'ChatType' => 'C2C',
+            'MsgTime'  => $msg_time,
+        ];
+
+        $result = $this->httpPostJson('v4/open_msg_svc/get_history', $msg);
+
+        return $result;
+    }
 }
