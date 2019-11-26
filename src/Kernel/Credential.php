@@ -98,16 +98,9 @@ class Credential
         if ($usrsig = $this->app['cache']->get($this->cacheKey())) {
             return $usrsig;
         }
-        $credentials        = $this->credentials();
-        $protected_key_path = $protected_key_path ?: $credentials['key_path'];
-        $tool_path          = $tool_path ?: base_path('vendor/halobear/tencent-im/src/Command/linux-signature64');
-        # 这里需要写绝对路径，开发者根据自己的路径进行调整
-        $command = escapeshellarg($tool_path) . ' ' . escapeshellarg($protected_key_path) . ' ' . escapeshellarg($credentials['app_id']) . ' ' . escapeshellarg($identifier);
-        $ret     = exec($command, $out, $status);
-        if ($status == -1) {
-            return null;
-        }
-        $usrsig = $this->usersig = $out[0];
+        $credentials = $this->credentials();
+        $sig         = new TLSSigAPIv2($credentials['app_id'], $credentials['app_secret']);
+        $usrsig      = $this->usersig = $sig->genSig($identifier);
         $this->setToken($this->usersig, 86400);
 
         return $usrsig;
