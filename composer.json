@@ -1,0 +1,17 @@
+{
+    "name": "halo\/service-demo",
+    "description": "Package description here.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "管少秋",
+            "email": "94600115@qq.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Halo\\ServiceDemo\\": "src"
+        }
+    }
+}
