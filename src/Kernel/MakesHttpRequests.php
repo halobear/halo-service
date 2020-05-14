@@ -9,7 +9,7 @@
  * with this source code in the file LICENSE.
  */
 
-namespace TencentIm\Kernel;
+namespace HaloService\Kernel;
 
 /**
  * Trait MakesHttpRequests.
@@ -24,11 +24,12 @@ trait MakesHttpRequests
     protected $transform = true;
 
     /**
-     * @param string $method
-     * @param string $uri
-     * @param array  $options
+     * @param  string  $method
+     * @param  string  $uri
+     * @param  array  $options
      *
      * @return array|\GuzzleHttp\Psr7\Response
+     * @throws Exceptions\ClientError
      */
     public function request(string $method, string $uri, array $options = [])
     {
@@ -38,16 +39,15 @@ trait MakesHttpRequests
     }
 
     /**
-     * @param string $method
-     * @param string $uri
-     * @param array  $options
+     * @param  string  $method
+     * @param  string  $uri
+     * @param  array  $options
      *
      * @return array|\GuzzleHttp\Psr7\Response
      */
     public function requestAsync(string $method, string $uri, array $options = [])
     {
         $response = $this->app['http_client']->requestAsync($method, $uri, $options);
-
         //return $this->transform ? $this->transformResponse($response) : $response;
     }
 
@@ -62,11 +62,11 @@ trait MakesHttpRequests
     }
 
     /**
-     * @param \GuzzleHttp\Psr7\Response $response
+     * @param  \GuzzleHttp\Psr7\Response  $response
      *
      * @return array
      *
-     * @throws \TencentIm\Kernel\Exceptions\ClientError
+     * @throws \HaloService\Kernel\Exceptions\ClientError
      */
     protected function transformResponse($response): array
     {

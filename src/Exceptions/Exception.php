@@ -6,7 +6,7 @@
  * Time: 3:01 PM
  */
 
-namespace TencentIm\Exceptions;
+namespace HaloService\Exceptions;
 
 class Exception extends \Exception
 {

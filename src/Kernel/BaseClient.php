@@ -9,10 +9,10 @@
  * with this source code in the file LICENSE.
  */
 
-namespace TencentIm\Kernel;
+namespace HaloService\Kernel;
 
 use GuzzleHttp\HandlerStack;
-use TencentIm\Application;
+use HaloService\Application;
 use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\RequestInterface;
 
@@ -26,16 +26,16 @@ class BaseClient
     use MakesHttpRequests;
 
     /**
-     * @var \TencentIm\Application
+     * @var \HaloService\Application
      */
     protected $app;
 
-    protected $tencentImHandlerStack;
+    protected $HaloServiceHandlerStack;
 
     protected $taobaoHandlerStack;
 
     /**
-     * @param \TencentIm\Application
+     * @param  \HaloService\Application
      */
     public function __construct(Application $app)
     {
@@ -45,73 +45,85 @@ class BaseClient
     /**
      * Make a get request.
      *
-     * @param string $uri
-     * @param array  $query
+     * @param  string  $uri
+     * @param  array  $query
      *
      * @return array|\GuzzleHttp\Psr7\Response
      */
     public function httpGet(string $uri, array $query = [])
     {
-        return $this->requestTencentIm('GET', $uri, [RequestOptions::QUERY => $query]);
+        return $this->requestHaloService('GET', $uri, [RequestOptions::QUERY => $query]);
     }
 
     /**
      * Make a post request.
      *
-     * @param string $uri
-     * @param array  $json
-     * @param array  $query
+     * @param  string  $uri
+     * @param  array  $json
+     * @param  array  $query
      *
      * @return array|\GuzzleHttp\Psr7\Response
      */
     public function httpPostJson(string $uri, array $json = [], array $query = [])
     {
-        return $this->requestTencentIm('POST', $uri, [
-            RequestOptions::QUERY => $query,
-            RequestOptions::JSON  => $json,
-        ]);
+        return $this->requestHaloService(
+            'POST',
+            $uri,
+            [
+                RequestOptions::QUERY => $query,
+                RequestOptions::JSON  => $json,
+            ]
+        );
     }
 
     /**
      * Make a post request.
      *
-     * @param string $uri
-     * @param array  $json
-     * @param array  $query
+     * @param  string  $uri
+     * @param  array  $json
+     * @param  array  $query
      *
      * @return array|\GuzzleHttp\Psr7\Response
      */
     public function httpAsyncPostJson(string $uri, array $json = [], array $query = [])
     {
-        return $this->requestAsyncTencentIm('POST', $uri, [
-            RequestOptions::QUERY => $query,
-            RequestOptions::JSON  => $json,
-        ]);
+        return $this->requestAsyncHaloService(
+            'POST',
+            $uri,
+            [
+                RequestOptions::QUERY => $query,
+                RequestOptions::JSON  => $json,
+            ]
+        );
     }
 
     /**
      * Make a get request.
      *
-     * @param string $uri
-     * @param array  $json
-     * @param array  $query
+     * @param  string  $uri
+     * @param  array  $json
+     * @param  array  $query
      *
      * @return array|\GuzzleHttp\Psr7\Response
      */
     public function httpGetJson(string $uri, array $json = [], array $query = [])
     {
-        return $this->requestTencentIm('GET', $uri, [
-            RequestOptions::QUERY => $query,
-            RequestOptions::JSON  => $json,
-        ]);
+        return $this->requestHaloService(
+            'GET',
+            $uri,
+            [
+                RequestOptions::QUERY => $query,
+                RequestOptions::JSON  => $json,
+            ]
+        );
     }
 
     /**
      * Upload files.
      *
-     * @param string $uri
-     * @param array  $files
-     * @param array  $query
+     * @param  string  $uri
+     * @param  array  $files
+     * @param  array  $query
      *
      * @return array|\GuzzleHttp\Psr7\Response
      */
@@ -126,38 +138,51 @@ class BaseClient
             ];
         }
 
-        return $this->requestTencentIm('POST', $uri, [
-            RequestOptions::QUERY     => $query,
-            RequestOptions::MULTIPART => $multipart,
-        ]);
+        return $this->requestHaloService(
+            'POST',
+            $uri,
+            [
+                RequestOptions::QUERY     => $query,
+                RequestOptions::MULTIPART => $multipart,
+            ]
+        );
     }
 
 
     /**
      * @param       $method
      * @param       $uri
-     * @param array $options
+     * @param  array  $options
      *
      * @return array|\GuzzleHttp\Psr7\Response
+     * @throws Exceptions\ClientError
      */
-    protected function requestTencentIm($method, $uri, array $options = [])
+    protected function requestHaloService($method, $uri, array $options = [])
     {
-        if (!$handler = $this->tencentImHandlerStack) {
+        if (!$handler = $this->HaloServiceHandlerStack) {
             $handler = HandlerStack::create();
 
-            $handler->push(function (callable $handler) {
-                return function (RequestInterface $request, array $options) use ($handler) {
-                    return $handler($this->concat($request, [
-                        'usersig'     => $this->app['credential']->token(),
-                        'identifier'  => $this->app['config']->get('identifier'),
-                        'sdkappid'    => $this->app['config']->get('app_id'),
-                        'random'      => str_random(32),
-                        'contenttype' => 'json',
-                    ]), $options);
-                };
-            });
+            $handler->push(
+                function (callable $handler) {
+                    return function (RequestInterface $request, array $options) use ($handler) {
+                        return $handler(
+                            $this->concat(
+                                $request,
+                                [
+                                    'usersig'     => $this->app['credential']->token(),
+                                    'identifier'  => $this->app['config']->get('identifier'),
+                                    'sdkappid'    => $this->app['config']->get('app_id'),
+                                    'random'      => str_random(32),
+                                    'contenttype' => 'json',
+                                ]
+                            ),
+                            $options
+                        );
+                    };
+                }
+            );
 
-            $this->tencentImHandlerStack = $handler;
+            $this->HaloServiceHandlerStack = $handler;
         }
 
         return $this->request($method, $uri, $options + compact('handler'));
@@ -166,28 +191,36 @@ class BaseClient
     /**
      * @param       $method
      * @param       $uri
-     * @param array $options
+     * @param  array  $options
      *
      * @return array|\GuzzleHttp\Psr7\Response
      */
-    protected function requestAsyncTencentIm($method, $uri, array $options = [])
+    protected function requestAsyncHaloService($method, $uri, array $options = [])
     {
-        if (!$handler = $this->tencentImHandlerStack) {
+        if (!$handler = $this->HaloServiceHandlerStack) {
             $handler = HandlerStack::create();
 
-            $handler->push(function (callable $handler) {
-                return function (RequestInterface $request, array $options) use ($handler) {
-                    return $handler($this->concat($request, [
-                        'usersig'     => $this->app['credential']->token(),
-                        'identifier'  => $this->app['config']->get('identifier'),
-                        'sdkappid'    => $this->app['config']->get('app_id'),
-                        'random'      => str_random(32),
-                        'contenttype' => 'json',
-                    ]), $options);
-                };
-            });
+            $handler->push(
+                function (callable $handler) {
+                    return function (RequestInterface $request, array $options) use ($handler) {
+                        return $handler(
+                            $this->concat(
+                                $request,
+                                [
+                                    'usersig'     => $this->app['credential']->token(),
+                                    'identifier'  => $this->app['config']->get('identifier'),
+                                    'sdkappid'    => $this->app['config']->get('app_id'),
+                                    'random'      => str_random(32),
+                                    'contenttype' => 'json',
+                                ]
+                            ),
+                            $options
+                        );
+                    };
+                }
+            );
 
-            $this->tencentImHandlerStack = $handler;
+            $this->HaloServiceHandlerStack = $handler;
         }
 
         return $this->requestAsync($method, $uri, $options + compact('handler'));
@@ -195,8 +228,8 @@ class BaseClient
 
 
     /**
-     * @param \Psr\Http\Message\RequestInterface $request
-     * @param array                              $query
+     * @param  \Psr\Http\Message\RequestInterface  $request
+     * @param  array  $query
      *
      * @return \Psr\Http\Message\RequestInterface
      */

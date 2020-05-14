@@ -1,6 +1,6 @@
 {
-    "name": "halobear\/tencent-im",
-    "description": "A TENCENT-IM SDK",
+    "name": "halobear\/halo-service",
+    "description": "通用服务层",
     "license": "MIT",
     "authors": [
         {
@@ -19,24 +19,12 @@
     },
     "autoload": {
         "psr-4": {
-            "TencentIm\\": "src"
+            "HaloService\\": "src"
         },
         "files": [
             "src/Kernel/Support/helpers.php"
         ]
     },
     "scripts": {
-        "post-autoload-dump": [
-            "sudo chmod 777 -R ./src/Command",
-            "sudo chmod 777 -R ./src/Command/*"
-        ],
-        "post-package-install": [
-            "sudo chmod 777 -R ./src/Command",
-            "sudo chmod 777 -R ./src/Command/*"
-        ],
-        "post-package-update": [
-            "sudo chmod 777 -R ./src/Command",
-            "sudo chmod 777 -R ./src/Command/*"
-        ]
     }
 }

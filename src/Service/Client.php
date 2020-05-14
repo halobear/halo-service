@@ -1,7 +1,7 @@
 <?php
 
 /*
- * This file is part of the halobear/tencent-im
+ * This file is part of the halobear/tencent-im.
  *
  * (c) guansq <94600115@qq.com>
  *
@@ -9,14 +9,15 @@
  * with this source code in the file LICENSE.
  */
 
-namespace TencentIm\Kernel\Messages;
+namespace HaloService\Service;
+
+use HaloService\Kernel\BaseClient;
 
 /**
- * Class Markdown.
+ * Class Client.
  *
  * @author guansq <94600115@qq.com>
  */
-class Markdown extends Message
+class Client extends BaseClient
 {
-    protected $type = 'markdown';
 }

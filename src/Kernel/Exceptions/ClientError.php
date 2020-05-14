@@ -9,7 +9,7 @@
  * with this source code in the file LICENSE.
  */
 
-namespace TencentIm\Kernel\Exceptions;
+namespace HaloService\Kernel\Exceptions;
 
 /**
  * Class ClientError.

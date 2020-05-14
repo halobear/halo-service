@@ -6,7 +6,7 @@
  * Time: 3:03 PM
  */
 
-namespace TencentIm\Exceptions;
+namespace HaloService\Exceptions;
 
 class InvalidArgumentException extends Exception
 {

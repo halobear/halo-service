@@ -9,7 +9,7 @@
  * with this source code in the file LICENSE.
  */
 
-namespace TencentIm\Kernel;
+namespace HaloService\Kernel;
 
 use Adbar\Dot;
 

@@ -9,22 +9,14 @@
  * with this source code in the file LICENSE.
  */
 
-namespace TencentIm;
+namespace HaloService;
 
 use Pimple\Container;
-
 /**
  * Class Application.
  *
  * @author guansq <94600115@qq.com>
  *
- * @property \TencentIm\Auth\Client         $auth
- * @property \TencentIm\User\Client         $user
- * @property \TencentIm\Message\Client      $message
- * @property \TencentIm\Relation\Client     $relation
- * @property \TencentIm\Group\Client        $group
- * @property \TencentIm\Kernel\Credential   $credential
- * @property \TencentIm\Message\AsyncClient $async_message
  */
 class Application extends Container
 {
@@ -32,12 +24,7 @@ class Application extends Container
      * @var array
      */
     protected $providers = [
-        Auth\ServiceProvider::class,
-        User\ServiceProvider::class,
-        Kernel\ServiceProvider::class,
-        Message\ServiceProvider::class,
-        Relation\ServiceProvider::class,
-        Group\ServiceProvider::class,
+        Service\ServiceProvider::class,
     ];
 
     /**

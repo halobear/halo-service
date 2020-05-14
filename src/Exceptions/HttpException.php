@@ -6,7 +6,7 @@
  * Time: 3:06 PM
  */
 
-namespace TencentIm\Exceptions;
+namespace HaloService\Exceptions;
 
 class HttpException extends Exception
 {
