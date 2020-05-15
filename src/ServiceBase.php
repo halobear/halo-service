@@ -3,7 +3,6 @@
 namespace Halo\ServiceDemo;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class ServiceBase
@@ -17,11 +16,11 @@ class ServiceBase
      * 列表
      *
      * @param        $param
-     * @param  int  $page
-     * @param  int  $per_page
-     * @param  mixed  $field
-     * @param  array  $order
-     * @param  array  $select
+     * @param int $page
+     * @param int $per_page
+     * @param mixed $field
+     * @param array $order
+     * @param array $select
      * @return array
      */
     public function list($param, $page = 1, $per_page = 20, $field = ['id'], $order = ['desc'], $select = ['*'])
@@ -40,7 +39,7 @@ class ServiceBase
             foreach ($param as $key => $value) {
                 if ($value !== '') {
                     if (in_array($key, ['name', 'phone', 'title'])) {
-                        $query->where($key, 'like', '%'.$value.'%');
+                        $query->where($key, 'like', '%' . $value . '%');
                     } else {
                         $query->where($key, $value);
                     }
@@ -167,20 +166,20 @@ class ServiceBase
         $data = $condition;
         unset($condition['name']);
         unset($condition['title']);
-        // Log::info('打印参数', $condition);
+
         $query->where($condition);
 
         if (isset($data['name']) && $data['name']) {
             $query->where(
                 function ($query) use ($data) {
-                    $query->where('name', 'like', '%'.$data['name'].'%');
+                    $query->where('name', 'like', '%' . $data['name'] . '%');
                 }
             );
         }
         if (isset($data['title']) && $data['title']) {
             $query->where(
                 function ($query) use ($data) {
-                    $query->where('title', 'like', '%'.$data['title'].'%');
+                    $query->where('title', 'like', '%' . $data['title'] . '%');
                 }
             );
         }
@@ -271,5 +270,99 @@ class ServiceBase
         }
 
         return $query->where('id', $id)->select($select)->first();
+    }
+
+
+    public function commonList()
+    {
+        $page          = request()->get('page', 1);
+        $per_page      = request()->get('per_page', 20);
+        $order         = request()->get('order', '{}');
+        $select        = request()->get('select', ['*']);
+        $condition     = request()->get('condition', request()->all());
+        $with          = request()->get('with');
+        $max_sort      = request()->get('max_sort', 0);
+        $has_condition = request()->get('has_condition');
+        $where_in      = request()->get('where_in', []);
+        $where_not_in  = request()->get('where_not_in', []);
+        $with          = $with ? json_decode($with, 1) : [];
+        $order         = $order ? json_decode($order, 1) : [];
+        $has_condition = $has_condition ? json_decode($has_condition, 1) : [];
+
+        $query = $this->model->newQuery();
+
+        $columns = Schema::getColumnListing($this->model->getTable());
+        foreach ($condition as $key => $item) {
+            if (!in_array($key, $columns) || $condition[$key] === '') {
+                unset($condition[$key]);
+            }
+        }
+
+        $query->where($condition);
+
+        foreach ($with as $info) {
+            $with_item = [
+                $info['name'] => function ($query) use ($info) {
+                    (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
+                    (isset($info['order_field']) && $info['order_field']) && $query->orderBy(
+                        $info['order_field'],
+                        $info['order_type'] ?? 'asc'
+                    );
+                    (isset($info['select']) && $info['select']) && $query->select($info['select']);
+                    if (isset($info['where_in']) && $info['where_in']) {
+                        foreach ($info['where_in'] as $item) {
+                            $query->whereIn($item['field'], $item['list']);
+                        }
+                    }
+                },
+            ];
+            $query->with($with_item);
+            $query->withCount($with_item);
+        }
+
+
+        foreach ($has_condition as $info) {
+            $query->whereHas(
+                $info['name'],
+                function ($query) use ($info) {
+                    (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
+                    if (isset($info['where_in']) && $info['where_in']) {
+                        foreach ($info['where_in'] as $item) {
+                            $query->whereIn($item['field'], $item['list']);
+                        }
+                    }
+                }
+            );
+        }
+
+        foreach ($where_in as $info) {
+            if (isset($info['list']) && $info['list']) {
+                $query->whereIn($info['field'], $info['list']);
+            }
+        }
+        foreach ($where_not_in as $info) {
+            if (isset($info['list']) && $info['list']) {
+                $query->whereNotIn($info['field'], $info['list']);
+            }
+        }
+
+        // 总数
+        $total = $query->count('id');
+
+        foreach ($order as $item) {
+            $query = $query->orderBy($item['order_field'], $item['order_type']);
+        }
+
+        $list = $query->select($select)->forPage($page, $per_page)->get();
+
+        if ($max_sort) {
+            $maxSort  = $this->model->newQuery()
+                ->select('sort')
+                ->orderBy('sort', 'desc')
+                ->value('sort');
+            $max_sort = $max_sort ?: 0;
+            return compact('max_sort', 'total', 'list');
+        }
+        return compact('total', 'list');
     }
 }
