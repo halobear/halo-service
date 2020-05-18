@@ -1,4 +1,4 @@
-<h1 align="center"> service-demo </h1>
+<h1 align="center"> halo-service </h1>
 
 <p align="center"> .</p>
 
@@ -6,7 +6,7 @@
 ## Installing
 
 ```shell
-$ composer require halo/service-demo -vvv
+$ composer require halo/service -vvv
 ```
 
 ## Usage
