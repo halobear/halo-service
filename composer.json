@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "HaloService\\": "src"
+            "Halobear\\HaloService\\": "src"
         },
         "files": [
             "src/Kernel/Support/helpers.php"
