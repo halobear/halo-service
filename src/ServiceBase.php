@@ -1,6 +1,6 @@
 <?php
 
-namespace Halo\ServiceDemo;
+namespace HaloBear\HaloService;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
