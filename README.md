@@ -6,7 +6,7 @@
 ## Installing
 
 ```shell
-$ composer require halo/service -vvv
+$ composer require halobear/halo-service
 ```
 
 ## Usage
