@@ -9,7 +9,7 @@
  * with this source code in the file LICENSE.
  */
 
-namespace HaloBear\HaloService\Kernel\Support;
+namespace HaloService\Kernel\Support;
 
 /**
  * @param int $length
