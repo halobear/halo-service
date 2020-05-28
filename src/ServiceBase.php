@@ -370,4 +370,51 @@ class ServiceBase
         }
         return compact('total', 'list');
     }
+
+    public function getNum()
+    {
+        $condition     = request()->get('condition', request()->all());
+        $has_condition = request()->get('has_condition');
+        $where_in      = request()->get('where_in', []);
+        $where_not_in  = request()->get('where_not_in', []);
+        $has_condition = $has_condition ? json_decode($has_condition, 1) : [];
+
+        $query = $this->model->newQuery();
+
+        $columns = Schema::getColumnListing($this->model->getTable());
+        foreach ($condition as $key => $item) {
+            if (!in_array($key, $columns) || $condition[$key] === '') {
+                unset($condition[$key]);
+            }
+        }
+
+        $query->where($condition);
+
+        foreach ($has_condition as $info) {
+            $query->whereHas(
+                $info['name'],
+                function ($query) use ($info) {
+                    (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
+                    if (isset($info['where_in']) && $info['where_in']) {
+                        foreach ($info['where_in'] as $item) {
+                            $query->whereIn($item['field'], $item['list']);
+                        }
+                    }
+                }
+            );
+        }
+
+        foreach ($where_in as $info) {
+            if (isset($info['list']) && $info['list']) {
+                $query->whereIn($info['field'], $info['list']);
+            }
+        }
+        foreach ($where_not_in as $info) {
+            if (isset($info['list']) && $info['list']) {
+                $query->whereNotIn($info['field'], $info['list']);
+            }
+        }
+
+        return $query->count('id');
+    }
 }
