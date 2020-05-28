@@ -3,6 +3,7 @@
 namespace HaloService;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class ServiceBase
@@ -15,12 +16,12 @@ class ServiceBase
     /**
      * 列表
      *
-     * @param        $param
-     * @param int $page
-     * @param int $per_page
-     * @param mixed $field
-     * @param array $order
-     * @param array $select
+     * @param  array  $param
+     * @param  int  $page
+     * @param  int  $per_page
+     * @param  mixed  $field
+     * @param  array  $order
+     * @param  array  $select
      * @return array
      */
     public function list($param, $page = 1, $per_page = 20, $field = ['id'], $order = ['desc'], $select = ['*'])
@@ -101,11 +102,15 @@ class ServiceBase
      * 删除
      *
      * @param $id
-     * @return \Illuminate\Http\Response
+     * @return mixed
      */
     public function destroy($id)
     {
-        return $this->model->newQuery()->where('id', $id)->delete();
+        $model = $this->model->newQuery()->where('id', $id)->first();
+        if ($model) {
+            $model->delete();
+        }
+        return compact('id');
     }
 
     /**
@@ -360,7 +365,7 @@ class ServiceBase
                 ->select('sort')
                 ->orderBy('sort', 'desc')
                 ->value('sort');
-            $max_sort = $max_sort ?: 0;
+            $max_sort = $maxSort ?: 0;
             return compact('max_sort', 'total', 'list');
         }
         return compact('total', 'list');
