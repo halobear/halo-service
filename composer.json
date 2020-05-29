@@ -9,12 +9,7 @@
     }
   ],
   "require": {
-    "guzzlehttp/guzzle": "^6.3",
-    "pimple/pimple": "~3.0",
-    "adbario/php-dot-notation": "^2.1",
-    "illuminate/database": "^7.13",
-    "ext-json": "*",
-    "illuminate/console": "^7.13"
+    "ext-json": "*"
   },
   "require-dev": {
     "mockery/mockery": "^0.9.9",
