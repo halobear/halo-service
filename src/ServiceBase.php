@@ -3,7 +3,6 @@
 namespace HaloService;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class ServiceBase
@@ -103,6 +102,7 @@ class ServiceBase
      *
      * @param $id
      * @return mixed
+     * @throws \Exception
      */
     public function destroy($id)
     {
@@ -110,6 +110,7 @@ class ServiceBase
         if ($model) {
             $model->delete();
         }
+
         return compact('id');
     }
 
@@ -361,13 +362,12 @@ class ServiceBase
         $list = $query->select($select)->forPage($page, $per_page)->get();
 
         if ($max_sort) {
-            $maxSort  = $this->model->newQuery()
-                ->select('sort')
-                ->orderBy('sort', 'desc')
-                ->value('sort');
+            $maxSort  = $this->model->newQuery()->select('sort')->orderBy('sort', 'desc')->value('sort');
             $max_sort = $maxSort ?: 0;
+
             return compact('max_sort', 'total', 'list');
         }
+
         return compact('total', 'list');
     }
 
