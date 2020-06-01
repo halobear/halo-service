@@ -1,43 +1,17 @@
 <?php
 
-namespace App\Http\Controllers;
-use App\{{modelName}};
+namespace App\Http\Controllers{{versionName}};
 
-class {{modelName}}Controller extends Controller
+use App\Http\Controllers\Controller;
+use App\Service{{versionName}}\{{serviceName}}Service;
+
+class {{controllerName}}Controller extends Controller
 {
-    public function index()
+
+    protected $service;
+
+    public function __construct({{serviceName}}Service $service)
     {
-        ${{modelNamePluralLowerCase}} = {{modelName}}::latest()->get();
-
-        return response()->json(${{modelNamePluralLowerCase}});
-    }
-
-    public function store({{modelName}}Request $request)
-    {
-        ${{modelNameSingularLowerCase}} = {{modelName}}::create($request->all());
-
-        return response()->json(${{modelNameSingularLowerCase}}, 201);
-    }
-
-    public function show($id)
-    {
-        ${{modelNameSingularLowerCase}} = {{modelName}}::findOrFail($id);
-
-        return response()->json(${{modelNameSingularLowerCase}});
-    }
-
-    public function update({{modelName}}Request $request, $id)
-    {
-        ${{modelNameSingularLowerCase}} = {{modelName}}::findOrFail($id);
-        ${{modelNameSingularLowerCase}}->update($request->all());
-
-        return response()->json(${{modelNameSingularLowerCase}}, 200);
-    }
-
-    public function destroy($id)
-    {
-        {{modelName}}::destroy($id);
-
-        return response()->json(null, 204);
+        $this->service = $service;
     }
 }

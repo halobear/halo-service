@@ -1,0 +1,14 @@
+<?php
+
+namespace App\Service{{versionName}};
+
+use App\Model\{{modelName}};
+use HaloService\ServiceBase;
+
+class {{serviceName}}Service extends ServiceBase
+{
+    public function __construct({{modelName}} $app)
+    {
+        $this->model = $app;
+    }
+}
