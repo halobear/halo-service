@@ -13,293 +13,30 @@ class ServiceBase
     protected $model;
 
     /**
-     * 列表
+     * 列表页
      *
-     * @param  array  $param
-     * @param  int  $page
-     * @param  int  $per_page
-     * @param  mixed  $field
-     * @param  array  $order
-     * @param  array  $select
      * @return array
      */
-    public function list($param, $page = 1, $per_page = 20, $field = ['id'], $order = ['desc'], $select = ['*'])
+    public function index()
     {
-        $query   = $this->model->newQuery();
-        $columns = Schema::getColumnListing($this->model->getTable());
+        $request_body  = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body  = json_decode($request_body, 1);
+        $page          = data_get($request_body, 'page', 1);
+        $per_page      = data_get($request_body, 'per_page', 1);
+        $select        = data_get($request_body, 'select', ['*']);
+        $condition     = data_get($request_body, 'condition', request()->except(['request_body']) ?: []);
+        $max_sort      = data_get($request_body, 'max_sort', 0);
+        $where_in      = data_get($request_body, 'where_in', []);
+        $where_not_in  = data_get($request_body, 'where_not_in', []);
+        $order         = data_get($request_body, 'order', []);
+        $with          = data_get($request_body, 'with', []);
+        $with_count    = data_get($request_body, 'with_count', []);
+        $has_condition = data_get($request_body, 'has_condition', []);
+        $query         = $this->model->newQuery();
 
-        // 搜索字段
-        foreach ($param as $key => $item) {
+        $columns = Schema::getColumnListing($this->model->getTable());
+        foreach ($condition as $key => $item) {
             if (!in_array($key, $columns)) {
-                unset($param[$key]);
-            }
-        }
-
-        if ($param) {
-            foreach ($param as $key => $value) {
-                if ($value !== '') {
-                    if (in_array($key, ['name', 'phone', 'title'])) {
-                        $query->where($key, 'like', '%' . $value . '%');
-                    } else {
-                        $query->where($key, $value);
-                    }
-                }
-            }
-        }
-
-        // 总数
-        $total = $query->count('id');
-        $list  = [];
-        if ($total) {
-            $list = $query->select($select)->forPage($page, $per_page)->orderBy($field, $order)->get();
-        }
-
-        return ['list' => $list, 'total' => $total];
-    }
-
-    /**
-     * 数据创建
-     *
-     * @param $param
-     * @return \Illuminate\Database\Eloquent\Builder|Model
-     */
-    public function store($param)
-    {
-        method_exists($this, 'createValidation') && $this->createValidation($param);
-
-        return $this->model->newQuery()->create($param);
-    }
-
-    /**
-     * 详情
-     *
-     * @param $id
-     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection|Model|null
-     */
-    public function show($id)
-    {
-        return $this->model->newQuery()->find($id);
-    }
-
-    /**
-     * 更新
-     *
-     * @param $id
-     * @param $param
-     * @return bool
-     */
-    public function update($id, $param)
-    {
-        method_exists($this, 'updateValidation') && $this->updateValidation($id, $param);
-
-        $data = $this->model->newQuery()->findOrFail($id);
-
-        return $data->fill($param)->save();
-    }
-
-    /**
-     * 删除
-     *
-     * @param $id
-     * @return mixed
-     * @throws \Exception
-     */
-    public function destroy($id)
-    {
-        $model = $this->model->newQuery()->where('id', $id)->first();
-        if ($model) {
-            $model->delete();
-        }
-
-        return compact('id');
-    }
-
-    /**
-     * 禁用
-     *
-     * @param $id
-     * @return int
-     */
-    public function forbid($id)
-    {
-        $ret = $this->model->newQuery()->where('id', $id)->update(['status' => 0]);
-
-        return $ret;
-    }
-
-    /**
-     * 启用
-     *
-     * @param $id
-     * @return int
-     */
-    public function resume($id)
-    {
-        $ret = $this->model->newQuery()->where('id', $id)->update(['status' => 1]);
-
-        return $ret;
-    }
-
-    /**
-     * 基类查询信息
-     *
-     * @return array
-     */
-    public function filterList()
-    {
-        $page          = request()->get('page', 1);
-        $per_page      = request()->get('per_page', 20);
-        $order_field   = request()->get('order_field', 'id');
-        $order_type    = request()->get('order_type', 'desc');
-        $select        = request()->get('select', ['*']);
-        $condition     = request()->get('condition', request()->all());
-        $with          = request()->get('with');
-        $has_condition = request()->get('has_condition');
-        $where_in      = request()->get('where_in', []);
-        $where_not_in  = request()->get('where_not_in', []);
-        $diy_order     = request()->get('diy_order');
-        $with          = $with ? json_decode($with, 1) : [];
-        $has_condition = $has_condition ? json_decode($has_condition, 1) : [];
-
-        $query = $this->model->newQuery();
-
-        $columns = Schema::getColumnListing($this->model->getTable());
-        foreach ($condition as $key => $item) {
-            if (!in_array($key, $columns) || $condition[$key] === '') {
-                unset($condition[$key]);
-            }
-        }
-        $data = $condition;
-        unset($condition['name']);
-        unset($condition['title']);
-
-        $query->where($condition);
-
-        if (isset($data['name']) && $data['name']) {
-            $query->where(
-                function ($query) use ($data) {
-                    $query->where('name', 'like', '%' . $data['name'] . '%');
-                }
-            );
-        }
-        if (isset($data['title']) && $data['title']) {
-            $query->where(
-                function ($query) use ($data) {
-                    $query->where('title', 'like', '%' . $data['title'] . '%');
-                }
-            );
-        }
-        foreach ($with as $info) {
-            $query->with(
-                [
-                    $info['name'] => function ($query) use ($info) {
-                        (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
-                        (isset($info['order_field']) && $info['order_field']) && $query->orderBy(
-                            $info['order_field'],
-                            $info['order_type'] ?? 'asc'
-                        );
-                        (isset($info['select']) && $info['select']) && $query->select($info['select']);
-                    },
-                ]
-            );
-        }
-
-        foreach ($has_condition as $info) {
-            $query->whereHas(
-                $info['name'],
-                function ($query) use ($info) {
-                    (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
-                }
-            );
-        }
-
-        foreach ($where_in as $info) {
-            if (isset($info['list']) && $info['list']) {
-                $query->whereIn($info['field'], $info['list']);
-            }
-        }
-        foreach ($where_not_in as $info) {
-            if (isset($info['list']) && $info['list']) {
-                $query->whereNotIn($info['field'], $info['list']);
-            }
-        }
-
-        // 总数
-        $total = $query->count('id');
-        if ($diy_order) {
-            $query = $query->select($select)->forPage($page, $per_page);
-            foreach ($diy_order as $item) {
-                $query = $query->orderBy($item['order_field'], $item['order_type']);
-            }
-            $list = $query->get();
-        } else {
-            $list = $query->select($select)->forPage($page, $per_page)->orderBy($order_field, $order_type)->get();
-        }
-
-        return compact('total', 'list');
-    }
-
-    /**
-     * 基类关联查询详情
-     *
-     * @param       $id
-     * @return \Illuminate\Database\Eloquent\Builder|Model|object|null
-     */
-    public function withShow($id)
-    {
-        $select        = request()->get('select', ['*']);
-        $with          = request()->get('with');
-        $has_condition = request()->get('has_condition');
-        $with          = $with ? json_decode($with, 1) : [];
-        $has_condition = $has_condition ? json_decode($has_condition, 1) : [];
-
-        $query = $this->model->newQuery();
-        foreach ($with as $info) {
-            $query->with(
-                [
-                    $info['name'] => function ($query) use ($info) {
-                        $info['condition'] && $query->where($info['condition']);
-                        $info['order_field'] && $query->orderBy($info['order_field'], $info['order_type'] ?? 'asc');
-                        $info['select'] && $query->select($info['select']);
-                    },
-                ]
-            );
-        }
-
-        foreach ($has_condition as $info) {
-            $query->whereHas(
-                $info['name'],
-                function ($query) use ($info) {
-                    $info['condition'] && $query->where($info['condition']);
-                }
-            );
-        }
-
-        return $query->where('id', $id)->select($select)->first();
-    }
-
-
-    public function commonList()
-    {
-        $page          = request()->get('page', 1);
-        $per_page      = request()->get('per_page', 20);
-        $order         = request()->get('order', '{}');
-        $select        = request()->get('select', ['*']);
-        $condition     = request()->get('condition', request()->all());
-        $with          = request()->get('with');
-        $max_sort      = request()->get('max_sort', 0);
-        $has_condition = request()->get('has_condition');
-        $where_in      = request()->get('where_in', []);
-        $where_not_in  = request()->get('where_not_in', []);
-        $with          = $with ? json_decode($with, 1) : [];
-        $order         = $order ? json_decode($order, 1) : [];
-        $has_condition = $has_condition ? json_decode($has_condition, 1) : [];
-
-        $query = $this->model->newQuery();
-
-        $columns = Schema::getColumnListing($this->model->getTable());
-        foreach ($condition as $key => $item) {
-            if (!in_array($key, $columns) || $condition[$key] === '') {
                 unset($condition[$key]);
             }
         }
@@ -323,9 +60,22 @@ class ServiceBase
                 },
             ];
             $query->with($with_item);
-            $query->withCount($with_item);
+            // $query->withCount($with_item);
         }
+        $query = $query->select($select);
 
+        foreach ($with_count as $info) {
+            if (isset($info['condition']) && $info['condition']) {
+                $query->withCount(
+                    $info['name'],
+                    function ($query) {
+                        $query->where($info['condition']);
+                    }
+                );
+            } else {
+                $query->withCount($info['name']);
+            }
+        }
 
         foreach ($has_condition as $info) {
             $query->whereHas(
@@ -371,6 +121,254 @@ class ServiceBase
         return compact('total', 'list');
     }
 
+    /**
+     * 数据创建
+     *
+     * @param $param
+     * @return \Illuminate\Database\Eloquent\Builder|Model
+     */
+    public function store($param)
+    {
+        return $this->model->newQuery()->create($param);
+    }
+
+    /**
+     * 详情
+     *
+     * @param $param
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection|Model|null
+     */
+    public function show($id)
+    {
+        $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body = json_decode($request_body, 1);
+        if ($request_body) {
+            $select        = data_get($request_body, 'select', ['*']);
+            $with          = data_get($request_body, 'with', []);
+            $has_condition = data_get($request_body, 'has_condition', []);
+            $query         = $this->model->newQuery();
+            foreach ($with as $info) {
+                $query->with(
+                    [
+                        $info['name'] => function ($query) use ($info) {
+                            $info['condition'] && $query->where($info['condition']);
+                            $info['order_field'] && $query->orderBy($info['order_field'], $info['order_type'] ?? 'asc');
+                            $info['select'] && $query->select($info['select']);
+                        },
+                    ]
+                );
+            }
+
+            foreach ($has_condition as $info) {
+                $query->whereHas(
+                    $info['name'],
+                    function ($query) use ($info) {
+                        $info['condition'] && $query->where($info['condition']);
+                    }
+                );
+            }
+
+            return $query->where('id', $id)->select($select)->first();
+        } else {
+            return $this->model->newQuery()->find($id);
+        }
+    }
+
+    /**
+     * 通过条件查询详情
+     */
+    public function showByCondition()
+    {
+        $request_body  = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body  = json_decode($request_body, 1);
+        $select        = data_get($request_body, 'select', ['*']);
+        $with          = data_get($request_body, 'with', []);
+        $has_condition = data_get($request_body, 'has_condition', []);
+        $condtion      = data_get($request_body, 'condition', []);
+        $query         = $this->model->newQuery()->where($condtion);
+        foreach ($with as $info) {
+            $query->with(
+                [
+                    $info['name'] => function ($query) use ($info) {
+                        $info['condition'] && $query->where($info['condition']);
+                        $info['order_field'] && $query->orderBy($info['order_field'], $info['order_type'] ?? 'asc');
+                        $info['select'] && $query->select($info['select']);
+                    },
+                ]
+            );
+        }
+
+        foreach ($has_condition as $info) {
+            $query->whereHas(
+                $info['name'],
+                function ($query) use ($info) {
+                    $info['condition'] && $query->where($info['condition']);
+                }
+            );
+        }
+
+        return $query->where($has_condition)->select($select)->first();
+    }
+
+
+    /**
+     * 更新
+     *
+     * @param $id
+     * @param $param
+     * @return bool
+     */
+    public function update($id, $param)
+    {
+        $data = $this->model->newQuery()->find($id);
+
+        return $data->fill($param)->save();
+    }
+
+    /**
+     * 根据条件更新
+     *
+     * @param $param
+     * @return bool
+     */
+    public function updateByCondition($param)
+    {
+        $request_body  = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body  = json_decode($request_body, 1);
+        $condtion      = data_get($request_body, 'condition', []);
+        $has_condition = data_get($request_body, 'has_condition', []);
+        $where_in      = data_get($request_body, 'where_in', []);
+        $where_not_in  = data_get($request_body, 'where_not_in', []);
+
+        $columns = Schema::getColumnListing($this->model->getTable());
+        $query   = $this->model->newQuery()->where($condtion);
+
+        foreach ($param as $key => $item) {
+            if (!in_array($key, $columns)) {
+                unset($param[$key]);
+            }
+        }
+
+        foreach ($has_condition as $info) {
+            $query->whereHas(
+                $info['name'],
+                function ($query) use ($info) {
+                    (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
+                    if (isset($info['where_in']) && $info['where_in']) {
+                        foreach ($info['where_in'] as $item) {
+                            $query->whereIn($item['field'], $item['list']);
+                        }
+                    }
+                }
+            );
+        }
+
+        foreach ($where_in as $info) {
+            if (isset($info['list']) && $info['list']) {
+                $query->whereIn($info['field'], $info['list']);
+            }
+        }
+
+        foreach ($where_not_in as $info) {
+            if (isset($info['list']) && $info['list']) {
+                $query->whereNotIn($info['field'], $info['list']);
+            }
+        }
+
+        return $query->update($param);
+    }
+
+    /**
+     * 删除
+     *
+     * @param $id
+     * @return mixed
+     * @throws \Exception
+     */
+    public function destroy($id)
+    {
+        $model = $this->model->newQuery()->where('id', $id)->first();
+        if ($model) {
+            $model->delete();
+        }
+
+        return compact('id');
+    }
+
+    /**
+     * 通过条件进行删除
+     *
+     * @return mixed
+     */
+    public function destroyByCondition()
+    {
+        $request_body  = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body  = json_decode($request_body, 1);
+        $condtion      = data_get($request_body, 'condition', []);
+        $has_condition = data_get($request_body, 'has_condition', []);
+        $where_in      = data_get($request_body, 'where_in', []);
+        $where_not_in  = data_get($request_body, 'where_not_in', []);
+        $query         = $this->model->newQuery()->where($condtion);
+        foreach ($has_condition as $info) {
+            $query->whereHas(
+                $info['name'],
+                function ($query) use ($info) {
+                    (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
+                    if (isset($info['where_in']) && $info['where_in']) {
+                        foreach ($info['where_in'] as $item) {
+                            $query->whereIn($item['field'], $item['list']);
+                        }
+                    }
+                }
+            );
+        }
+
+        foreach ($where_in as $info) {
+            if (isset($info['list']) && $info['list']) {
+                $query->whereIn($info['field'], $info['list']);
+            }
+        }
+
+        foreach ($where_not_in as $info) {
+            if (isset($info['list']) && $info['list']) {
+                $query->whereNotIn($info['field'], $info['list']);
+            }
+        }
+
+        return $query->delete();
+    }
+
+    /**
+     * 禁用
+     *
+     * @param $id
+     * @return int
+     */
+    public function forbid($id)
+    {
+        $ret = $this->model->newQuery()->where('id', $id)->update(['status' => 0]);
+
+        return $ret;
+    }
+
+    /**
+     * 启用
+     *
+     * @param $id
+     * @return int
+     */
+    public function resume($id)
+    {
+        $ret = $this->model->newQuery()->where('id', $id)->update(['status' => 1]);
+
+        return $ret;
+    }
+
+    /**
+     * 得到统计数量
+     *
+     * @return int
+     */
     public function getNum()
     {
         $condition     = request()->get('condition', request()->all());
