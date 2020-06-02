@@ -5,7 +5,7 @@ namespace HaloService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 
-class ServiceBase
+class BaseService
 {
     /**
      * @var Model $model
@@ -17,10 +17,12 @@ class ServiceBase
      *
      * @return array
      */
-    public function index()
+    public function index($request_body = [])
     {
-        $request_body  = data_get(request()->get('request_body'), 'request_body', '[]');
-        $request_body  = json_decode($request_body, 1);
+        if (empty($request_body)) {
+            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = json_decode($request_body, 1);
+        }
         $page          = data_get($request_body, 'page', 1);
         $per_page      = data_get($request_body, 'per_page', 1);
         $select        = data_get($request_body, 'select', ['*']);
