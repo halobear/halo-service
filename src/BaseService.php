@@ -20,11 +20,11 @@ class BaseService
     public function index($request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = request()->get('request_body','[]');
             $request_body = json_decode($request_body, 1);
         }
         $page          = data_get($request_body, 'page', 1);
-        $per_page      = data_get($request_body, 'per_page', 1);
+        $per_page      = data_get($request_body, 'per_page', 1000000);
         $select        = data_get($request_body, 'select', ['*']);
         $condition     = data_get($request_body, 'condition', request()->except(['request_body']) ?: []);
         $max_sort      = data_get($request_body, 'max_sort', 0);
@@ -144,7 +144,7 @@ class BaseService
     public function show($id, $request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = request()->get('request_body','[]');
             $request_body = json_decode($request_body, 1);
         }
 
@@ -189,7 +189,7 @@ class BaseService
     public function showByCondition($request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = request()->get('request_body','[]');
             $request_body = json_decode($request_body, 1);
         }
 
@@ -246,7 +246,7 @@ class BaseService
     public function updateByCondition($param, $request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = request()->get('request_body','[]');
             $request_body = json_decode($request_body, 1);
         }
 
@@ -318,7 +318,7 @@ class BaseService
     public function destroyByCondition($request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = request()->get('request_body','[]');
             $request_body = json_decode($request_body, 1);
         }
         $condtion      = data_get($request_body, 'condition', []);
@@ -397,7 +397,7 @@ class BaseService
     public function getNum($request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = request()->get('request_body','[]');
             $request_body = json_decode($request_body, 1);
         }
         $condtion      = data_get($request_body, 'condition', []);

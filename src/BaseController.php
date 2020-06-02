@@ -28,7 +28,7 @@ class BaseController extends Controller
      */
     public function index()
     {
-        $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body = request()->get('request_body','[]');
         $request_body = json_decode($request_body, 1);
 
         return success($this->service->index($request_body));
@@ -42,7 +42,7 @@ class BaseController extends Controller
      */
     public function store()
     {
-        $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body = request()->get('request_body','[]');
         $request_body = json_decode($request_body, 1);
 
         return success($this->service->store($request_body));
@@ -56,7 +56,7 @@ class BaseController extends Controller
      */
     public function show($id)
     {
-        $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body = request()->get('request_body','[]');
         $request_body = json_decode($request_body, 1);
 
         return success($this->service->show($id, $request_body));
@@ -70,7 +70,7 @@ class BaseController extends Controller
      */
     public function update($id)
     {
-        $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body = request()->get('request_body','[]');
         $request_body = json_decode($request_body, 1);
 
         $ret = $this->service->update($id, $request_body);
