@@ -11,7 +11,17 @@ $ composer require halobear/halo-service
 
 ## Usage
 
-TODO
+```shell
+第一步
+修改app/Console/Kernel.php文件
+
+protected $commands = [
+    MakeBaseFileCommand::class,
+];
+第二步
+执行自定义创建控制器 模型 服务命令
+php artisan make:base_file GoodsTest V1
+```
 
 ## Contributing
 
