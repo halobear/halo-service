@@ -154,22 +154,35 @@ class BaseService
             $has_condition = data_get($request_body, 'has_condition', []);
             $query         = $this->model->newQuery();
             foreach ($with as $info) {
-                $query->with(
-                    [
-                        $info['name'] => function ($query) use ($info) {
-                            $info['condition'] && $query->where($info['condition']);
-                            $info['order_field'] && $query->orderBy($info['order_field'], $info['order_type'] ?? 'asc');
-                            $info['select'] && $query->select($info['select']);
-                        },
-                    ]
-                );
+                $with_item = [
+                    $info['name'] => function ($query) use ($info) {
+                        (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
+                        (isset($info['order_field']) && $info['order_field']) && $query->orderBy(
+                            $info['order_field'],
+                            $info['order_type'] ?? 'asc'
+                        );
+                        (isset($info['select']) && $info['select']) && $query->select($info['select']);
+                        if (isset($info['where_in']) && $info['where_in']) {
+                            foreach ($info['where_in'] as $item) {
+                                $query->whereIn($item['field'], $item['list']);
+                            }
+                        }
+                    },
+                ];
+                $query->with($with_item);
+                // $query->withCount($with_item);
             }
 
             foreach ($has_condition as $info) {
                 $query->whereHas(
                     $info['name'],
                     function ($query) use ($info) {
-                        $info['condition'] && $query->where($info['condition']);
+                        (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
+                        if (isset($info['where_in']) && $info['where_in']) {
+                            foreach ($info['where_in'] as $item) {
+                                $query->whereIn($item['field'], $item['list']);
+                            }
+                        }
                     }
                 );
             }
@@ -199,22 +212,35 @@ class BaseService
         $condtion      = data_get($request_body, 'condition', []);
         $query         = $this->model->newQuery()->where($condtion);
         foreach ($with as $info) {
-            $query->with(
-                [
-                    $info['name'] => function ($query) use ($info) {
-                        $info['condition'] && $query->where($info['condition']);
-                        $info['order_field'] && $query->orderBy($info['order_field'], $info['order_type'] ?? 'asc');
-                        $info['select'] && $query->select($info['select']);
-                    },
-                ]
-            );
+            $with_item = [
+                $info['name'] => function ($query) use ($info) {
+                    (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
+                    (isset($info['order_field']) && $info['order_field']) && $query->orderBy(
+                        $info['order_field'],
+                        $info['order_type'] ?? 'asc'
+                    );
+                    (isset($info['select']) && $info['select']) && $query->select($info['select']);
+                    if (isset($info['where_in']) && $info['where_in']) {
+                        foreach ($info['where_in'] as $item) {
+                            $query->whereIn($item['field'], $item['list']);
+                        }
+                    }
+                },
+            ];
+            $query->with($with_item);
+            // $query->withCount($with_item);
         }
 
         foreach ($has_condition as $info) {
             $query->whereHas(
                 $info['name'],
                 function ($query) use ($info) {
-                    $info['condition'] && $query->where($info['condition']);
+                    (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
+                    if (isset($info['where_in']) && $info['where_in']) {
+                        foreach ($info['where_in'] as $item) {
+                            $query->whereIn($item['field'], $item['list']);
+                        }
+                    }
                 }
             );
         }
