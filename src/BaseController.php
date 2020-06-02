@@ -10,6 +10,8 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Validator;
 
+use function HaloService\Kernel\Support\str_random;
+
 class BaseController extends Controller
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
@@ -40,7 +42,10 @@ class BaseController extends Controller
      */
     public function store()
     {
-        return success($this->service->store(request()->all()));
+        $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body = json_decode($request_body, 1);
+
+        return success($this->service->store($request_body));
     }
 
     /**
@@ -51,7 +56,10 @@ class BaseController extends Controller
      */
     public function show($id)
     {
-        return success($this->service->show($id));
+        $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body = json_decode($request_body, 1);
+
+        return success($this->service->show($id, $request_body));
     }
 
     /**
@@ -62,7 +70,10 @@ class BaseController extends Controller
      */
     public function update($id)
     {
-        $ret = $this->service->update($id, request()->all());
+        $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+        $request_body = json_decode($request_body, 1);
+
+        $ret = $this->service->update($id, $request_body);
 
         return success($ret);
     }

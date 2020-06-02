@@ -126,24 +126,28 @@ class BaseService
     /**
      * 数据创建
      *
-     * @param $param
+     * @param $request_body
      * @return \Illuminate\Database\Eloquent\Builder|Model
      */
-    public function store($param)
+    public function store($request_body)
     {
-        return $this->model->newQuery()->create($param);
+        return $this->model->newQuery()->create($request_body);
     }
 
     /**
      * 详情
      *
-     * @param $param
+     * @param $id
+     * @param $request_body
      * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection|Model|null
      */
-    public function show($id)
+    public function show($id, $request_body = [])
     {
-        $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
-        $request_body = json_decode($request_body, 1);
+        if (empty($request_body)) {
+            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = json_decode($request_body, 1);
+        }
+
         if ($request_body) {
             $select        = data_get($request_body, 'select', ['*']);
             $with          = data_get($request_body, 'with', []);
@@ -178,11 +182,17 @@ class BaseService
 
     /**
      * 通过条件查询详情
+     *
+     * @param $request_body
+     * @return \Illuminate\Database\Eloquent\Builder|Model
      */
-    public function showByCondition()
+    public function showByCondition($request_body = [])
     {
-        $request_body  = data_get(request()->get('request_body'), 'request_body', '[]');
-        $request_body  = json_decode($request_body, 1);
+        if (empty($request_body)) {
+            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = json_decode($request_body, 1);
+        }
+
         $select        = data_get($request_body, 'select', ['*']);
         $with          = data_get($request_body, 'with', []);
         $has_condition = data_get($request_body, 'has_condition', []);
@@ -217,14 +227,14 @@ class BaseService
      * 更新
      *
      * @param $id
-     * @param $param
+     * @param $request_body
      * @return bool
      */
-    public function update($id, $param)
+    public function update($id, $request_body)
     {
         $data = $this->model->newQuery()->find($id);
 
-        return $data->fill($param)->save();
+        return $data->fill($request_body)->save();
     }
 
     /**
@@ -233,10 +243,13 @@ class BaseService
      * @param $param
      * @return bool
      */
-    public function updateByCondition($param)
+    public function updateByCondition($param, $request_body = [])
     {
-        $request_body  = data_get(request()->get('request_body'), 'request_body', '[]');
-        $request_body  = json_decode($request_body, 1);
+        if (empty($request_body)) {
+            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = json_decode($request_body, 1);
+        }
+
         $condtion      = data_get($request_body, 'condition', []);
         $has_condition = data_get($request_body, 'has_condition', []);
         $where_in      = data_get($request_body, 'where_in', []);
@@ -302,10 +315,12 @@ class BaseService
      *
      * @return mixed
      */
-    public function destroyByCondition()
+    public function destroyByCondition($request_body = [])
     {
-        $request_body  = data_get(request()->get('request_body'), 'request_body', '[]');
-        $request_body  = json_decode($request_body, 1);
+        if (empty($request_body)) {
+            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = json_decode($request_body, 1);
+        }
         $condtion      = data_get($request_body, 'condition', []);
         $has_condition = data_get($request_body, 'has_condition', []);
         $where_in      = data_get($request_body, 'where_in', []);
@@ -348,7 +363,11 @@ class BaseService
      */
     public function forbid($id)
     {
-        $ret = $this->model->newQuery()->where('id', $id)->update(['status' => 0]);
+        $ret = $this->model->newQuery()->find($id);
+        if (!$ret) {
+            return 0;
+        }
+        $ret->update(['status' => 0]);
 
         return $ret;
     }
@@ -361,7 +380,11 @@ class BaseService
      */
     public function resume($id)
     {
-        $ret = $this->model->newQuery()->where('id', $id)->update(['status' => 1]);
+        $ret = $this->model->newQuery()->find($id);
+        if (!$ret) {
+            return 0;
+        }
+        $ret->update(['status' => 1]);
 
         return $ret;
     }
@@ -371,15 +394,17 @@ class BaseService
      *
      * @return int
      */
-    public function getNum()
+    public function getNum($request_body = [])
     {
-        $condition     = request()->get('condition', request()->all());
-        $has_condition = request()->get('has_condition');
-        $where_in      = request()->get('where_in', []);
-        $where_not_in  = request()->get('where_not_in', []);
-        $has_condition = $has_condition ? json_decode($has_condition, 1) : [];
-
-        $query = $this->model->newQuery();
+        if (empty($request_body)) {
+            $request_body = data_get(request()->get('request_body'), 'request_body', '[]');
+            $request_body = json_decode($request_body, 1);
+        }
+        $condtion      = data_get($request_body, 'condition', []);
+        $has_condition = data_get($request_body, 'has_condition', []);
+        $where_in      = data_get($request_body, 'where_in', []);
+        $where_not_in  = data_get($request_body, 'where_not_in', []);
+        $query         = $this->model->newQuery();
 
         $columns = Schema::getColumnListing($this->model->getTable());
         foreach ($condition as $key => $item) {
