@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers{{versionName}};
 
-use App\Http\Controllers\Controller;
+use HaloService\BaseController;
 use App\Service{{versionName}}\{{serviceName}}Service;
 
-class {{controllerName}}Controller extends Controller
+class {{controllerName}}Controller extends BaseController
 {
 
     protected $service;
