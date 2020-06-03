@@ -3,9 +3,9 @@
 namespace App\Service{{versionName}};
 
 use App\Model\{{modelName}};
-use HaloService\ServiceBase;
+use HaloService\BaseService;
 
-class {{serviceName}}Service extends ServiceBase
+class {{serviceName}}Service extends BaseService
 {
     public function __construct({{modelName}} $app)
     {
