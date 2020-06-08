@@ -38,10 +38,19 @@ class BaseService
 
         $columns = Schema::getColumnListing($this->model->getTable());
         foreach ($condition as $key => $item) {
-            if (!in_array($key, $columns)) {
-                unset($condition[$key]);
+            if (is_numeric($key)) {
+                // 过滤字段在数组中,
+                if (!in_array(data_get($item, '0'), $columns) || data_get($item, '0') === '') {
+                    unset($condition[$key]);
+                }
+            } else {
+                // 过滤字段在键名中
+                if (!in_array($key, $columns) || $condition[$key] === '') {
+                    unset($condition[$key]);
+                }
             }
         }
+
 
         $query->where($condition);
 
@@ -70,7 +79,7 @@ class BaseService
             if (isset($info['condition']) && $info['condition']) {
                 $query->withCount(
                     $info['name'],
-                    function ($query) {
+                    function ($query) use($info) {
                         $query->where($info['condition']);
                     }
                 );
@@ -426,7 +435,7 @@ class BaseService
             $request_body = request()->get('request_body','[]');
             $request_body = json_decode($request_body, 1);
         }
-        $condtion      = data_get($request_body, 'condition', []);
+        $condition      = data_get($request_body, 'condition', []);
         $has_condition = data_get($request_body, 'has_condition', []);
         $where_in      = data_get($request_body, 'where_in', []);
         $where_not_in  = data_get($request_body, 'where_not_in', []);
