@@ -20,7 +20,7 @@ class BaseService
     public function index($request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = request()->get('request_body','[]');
+            $request_body = request()->get('request_body', '[]');
             $request_body = json_decode($request_body, 1);
         }
         $page          = data_get($request_body, 'page', 1);
@@ -79,7 +79,7 @@ class BaseService
             if (isset($info['condition']) && $info['condition']) {
                 $query->withCount(
                     $info['name'],
-                    function ($query) use($info) {
+                    function ($query) use ($info) {
                         $query->where($info['condition']);
                     }
                 );
@@ -153,7 +153,7 @@ class BaseService
     public function show($id, $request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = request()->get('request_body','[]');
+            $request_body = request()->get('request_body', '[]');
             $request_body = json_decode($request_body, 1);
         }
 
@@ -211,15 +211,15 @@ class BaseService
     public function showByCondition($request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = request()->get('request_body','[]');
+            $request_body = request()->get('request_body', '[]');
             $request_body = json_decode($request_body, 1);
         }
 
         $select        = data_get($request_body, 'select', ['*']);
         $with          = data_get($request_body, 'with', []);
         $has_condition = data_get($request_body, 'has_condition', []);
-        $condtion      = data_get($request_body, 'condition', []);
-        $query         = $this->model->newQuery()->where($condtion);
+        $condition     = data_get($request_body, 'condition', []);
+        $query         = $this->model->newQuery()->where($condition);
         foreach ($with as $info) {
             $with_item = [
                 $info['name'] => function ($query) use ($info) {
@@ -281,17 +281,17 @@ class BaseService
     public function updateByCondition($param, $request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = request()->get('request_body','[]');
+            $request_body = request()->get('request_body', '[]');
             $request_body = json_decode($request_body, 1);
         }
 
-        $condtion      = data_get($request_body, 'condition', []);
+        $condition     = data_get($request_body, 'condition', []);
         $has_condition = data_get($request_body, 'has_condition', []);
         $where_in      = data_get($request_body, 'where_in', []);
         $where_not_in  = data_get($request_body, 'where_not_in', []);
 
         $columns = Schema::getColumnListing($this->model->getTable());
-        $query   = $this->model->newQuery()->where($condtion);
+        $query   = $this->model->newQuery()->where($condition);
 
         foreach ($param as $key => $item) {
             if (!in_array($key, $columns)) {
@@ -353,14 +353,14 @@ class BaseService
     public function destroyByCondition($request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = request()->get('request_body','[]');
+            $request_body = request()->get('request_body', '[]');
             $request_body = json_decode($request_body, 1);
         }
-        $condtion      = data_get($request_body, 'condition', []);
+        $condition     = data_get($request_body, 'condition', []);
         $has_condition = data_get($request_body, 'has_condition', []);
         $where_in      = data_get($request_body, 'where_in', []);
         $where_not_in  = data_get($request_body, 'where_not_in', []);
-        $query         = $this->model->newQuery()->where($condtion);
+        $query         = $this->model->newQuery()->where($condition);
         foreach ($has_condition as $info) {
             $query->whereHas(
                 $info['name'],
@@ -432,10 +432,10 @@ class BaseService
     public function getNum($request_body = [])
     {
         if (empty($request_body)) {
-            $request_body = request()->get('request_body','[]');
+            $request_body = request()->get('request_body', '[]');
             $request_body = json_decode($request_body, 1);
         }
-        $condition      = data_get($request_body, 'condition', []);
+        $condition     = data_get($request_body, 'condition', []);
         $has_condition = data_get($request_body, 'has_condition', []);
         $where_in      = data_get($request_body, 'where_in', []);
         $where_not_in  = data_get($request_body, 'where_not_in', []);
