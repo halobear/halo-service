@@ -56,7 +56,7 @@ class MakeBaseFileCommand extends Command
         $name       = $this->argument('name');
         $class_name = $this->qualifyClass($name);
         $version    = $this->argument('version');
-        $model      = $this->argument('model') ?: 1;
+        $model      = $this->argument('model') ?? 1;
         $version ? $file_name = "$version/{$name}" : $name;
         if ($this->alreadyExists("/Http/Controllers/{$file_name}Controller")) {
             $this->error($name . ' already exists!');
