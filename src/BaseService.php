@@ -188,6 +188,7 @@ class BaseService
             $select        = data_get($request_body, 'select', ['*']);
             $with          = data_get($request_body, 'with', []);
             $has_condition = data_get($request_body, 'has_condition', []);
+            $select_raw    = data_get($request_body, 'select_raw', []);
             $query         = $this->model->newQuery();
             foreach ($with as $info) {
                 $with_item = [
@@ -209,6 +210,11 @@ class BaseService
                 // $query->withCount($with_item);
             }
 
+            $query->select($select);
+            foreach ($select_raw as $item) {
+                $query->selectRaw($item);
+            }
+
             foreach ($has_condition as $info) {
                 $query->whereHas(
                     $info['name'],
@@ -223,7 +229,7 @@ class BaseService
                 );
             }
 
-            return $query->where('id', $id)->select($select)->first();
+            return $query->where('id', $id)->first();
         } else {
             return $this->model->newQuery()->find($id);
         }
