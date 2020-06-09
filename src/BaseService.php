@@ -23,18 +23,19 @@ class BaseService
             $request_body = request()->get('request_body', '[]');
             $request_body = json_decode($request_body, 1);
         }
-        $page          = data_get($request_body, 'page', 1);
-        $per_page      = data_get($request_body, 'per_page', 1000000);
-        $select        = data_get($request_body, 'select', ['*']);
-        $condition     = data_get($request_body, 'condition', request()->except(['request_body']) ?: []);
-        $max_sort      = data_get($request_body, 'max_sort', 0);
-        $where_in      = data_get($request_body, 'where_in', []);
-        $where_not_in  = data_get($request_body, 'where_not_in', []);
-        $order         = data_get($request_body, 'order', []);
-        $with          = data_get($request_body, 'with', []);
-        $with_count    = data_get($request_body, 'with_count', []);
-        $has_condition = data_get($request_body, 'has_condition', []);
-        $query         = $this->model->newQuery();
+        $page             = data_get($request_body, 'page', 1);
+        $per_page         = data_get($request_body, 'per_page', 1000000);
+        $select           = data_get($request_body, 'select', ['*']);
+        $condition        = data_get($request_body, 'condition', request()->except(['request_body']) ?: []);
+        $max_sort         = data_get($request_body, 'max_sort', 0);
+        $where_in         = data_get($request_body, 'where_in', []);
+        $where_not_in     = data_get($request_body, 'where_not_in', []);
+        $order            = data_get($request_body, 'order', []);
+        $with             = data_get($request_body, 'with', []);
+        $with_count       = data_get($request_body, 'with_count', []);
+        $has_condition    = data_get($request_body, 'has_condition', []);
+        $has_or_condition = data_get($request_body, 'has_or_condition', []);
+        $query            = $this->model->newQuery();
 
         $columns = Schema::getColumnListing($this->model->getTable());
         foreach ($condition as $key => $item) {
@@ -100,6 +101,25 @@ class BaseService
                     }
                 }
             );
+        }
+
+        // 多查询条件模糊查询
+        if ($has_or_condition && is_array($has_or_condition)) {
+            foreach ($has_or_condition as $or_condition) {
+                if ($or_condition) {
+                    $query->where(
+                        function ($query) use ($or_condition) {
+                            if (is_array($or_condition)) {
+                                foreach ($or_condition as $or_c) {
+                                    if (isset($or_c['name']) && isset($or_c['operator']) && isset($or_c['value'])) {
+                                        $query->orWhere($or_c['name'], $or_c['operator'], $or_c['value']);
+                                    }
+                                }
+                            }
+                        }
+                    );
+                }
+            }
         }
 
         foreach ($where_in as $info) {
