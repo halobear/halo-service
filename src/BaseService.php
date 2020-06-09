@@ -3,6 +3,8 @@
 namespace HaloService;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 
 class BaseService
@@ -136,16 +138,16 @@ class BaseService
 
         // 总数
         $total = $query->count('id');
-
+        $query->select($select);
         foreach ($select_raw as $item) {
-            $query = $query->selectRaw($item);
+            $query->selectRaw($item);
         }
 
         foreach ($order as $item) {
             $query = $query->orderBy($item['order_field'], $item['order_type']);
         }
 
-        $list = $query->select($select)->forPage($page, $per_page)->get();
+        $list = $query->forPage($page, $per_page)->get();
 
         if ($max_sort) {
             $maxSort  = $this->model->newQuery()->select('sort')->orderBy('sort', 'desc')->value('sort');
