@@ -26,6 +26,7 @@ class BaseService
         $page             = data_get($request_body, 'page', 1);
         $per_page         = data_get($request_body, 'per_page', 1000000);
         $select           = data_get($request_body, 'select', ['*']);
+        $select_raw       = data_get($request_body, 'select_raw', []);
         $condition        = data_get($request_body, 'condition', request()->except(['request_body']) ?: []);
         $max_sort         = data_get($request_body, 'max_sort', 0);
         $where_in         = data_get($request_body, 'where_in', []);
@@ -135,6 +136,10 @@ class BaseService
 
         // 总数
         $total = $query->count('id');
+
+        foreach ($select_raw as $item) {
+            $query = $query->selectRaw($item);
+        }
 
         foreach ($order as $item) {
             $query = $query->orderBy($item['order_field'], $item['order_type']);
