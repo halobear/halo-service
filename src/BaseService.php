@@ -79,19 +79,6 @@ class BaseService
         }
         $query = $query->select($select);
 
-        foreach ($with_count as $info) {
-            if (isset($info['condition']) && $info['condition']) {
-                $query->withCount(
-                    $info['name'],
-                    function ($query) use ($info) {
-                        $query->where($info['condition']);
-                    }
-                );
-            } else {
-                $query->withCount($info['name']);
-            }
-        }
-
         foreach ($has_condition as $info) {
             $query->whereHas(
                 $info['name'],
@@ -141,6 +128,20 @@ class BaseService
         $query->select($select);
         foreach ($select_raw as $item) {
             $query->selectRaw($item);
+        }
+
+        foreach ($with_count as $info) {
+            if (isset($info['condition']) && $info['condition']) {
+                $query->withCount(
+                    [
+                        $info['name'] => function ($query) use ($info) {
+                            $query->where($info['condition']);
+                        },
+                    ]
+                );
+            } else {
+                $query->withCount($info['name']);
+            }
         }
 
         foreach ($order as $item) {
