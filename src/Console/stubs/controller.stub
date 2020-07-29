@@ -7,7 +7,6 @@ use App\Service{{versionName}}\{{serviceName}}Service;
 
 class {{controllerName}}Controller extends BaseController
 {
-
     protected $service;
 
     public function __construct({{serviceName}}Service $service)

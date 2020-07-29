@@ -38,6 +38,9 @@ class BaseService
         $with_count       = data_get($request_body, 'with_count', []);
         $has_condition    = data_get($request_body, 'has_condition', []);
         $has_or_condition = data_get($request_body, 'has_or_condition', []);
+        $order_by_raw     = data_get($request_body, 'order_by_raw', []);
+        $where_raw        = data_get($request_body, 'where_raw', []);
+
         $query            = $this->model->newQuery();
 
         $columns = Schema::getColumnListing($this->model->getTable());
@@ -103,6 +106,21 @@ class BaseService
                                 foreach ($or_condition as $or_c) {
                                     if (isset($or_c['name']) && isset($or_c['operator']) && isset($or_c['value'])) {
                                         $query->orWhere($or_c['name'], $or_c['operator'], $or_c['value']);
+                                    } elseif (array_values($or_c) === $or_c) {
+                                        $query->orWhere(
+                                            function ($query) use ($or_c) {
+                                                foreach ($or_c as $c) {
+                                                    if (isset($c['name'])) {
+                                                        $query->where(
+                                                            $c['name'],
+                                                            $c['operator'] ?? null,
+                                                            $c['value'] ?? null,
+                                                            $c['boolean'] ?? 'and'
+                                                        );
+                                                    }
+                                                }
+                                            }
+                                        );
                                     }
                                 }
                             }
@@ -123,11 +141,22 @@ class BaseService
             }
         }
 
+        // whereRaw
+        foreach ($where_raw as $item) {
+            if ($item && isset($item['sql']) && $item['sql']) {
+                $query->whereRaw($item['sql'], $item['bindings'] ?? [], $item['boolean'] ?? 'and');
+            }
+        }
+
         // 总数
         $total = $query->count('id');
         $query->select($select);
         foreach ($select_raw as $item) {
-            $query->selectRaw($item);
+            if (is_array($item) && isset($item['sql']) && isset($item['bindings'])) {
+                $query->selectRaw($item['sql'], $item['bindings']);
+            } elseif (is_string($item)) {
+                $query->selectRaw($item);
+            }
         }
 
         foreach ($with_count as $info) {
@@ -148,6 +177,11 @@ class BaseService
             $query = $query->orderBy($item['order_field'], $item['order_type']);
         }
 
+        // orderByRaw
+        if ($order_by_raw && isset($order_by_raw['sql']) && $order_by_raw['sql']) {
+            $query->orderByRaw($order_by_raw['sql'], $order_by_raw['bindings'] ?? []);
+        }
+
         $list = $query->forPage($page, $per_page)->get();
 
         if ($max_sort) {
@@ -160,14 +194,12 @@ class BaseService
         return compact('total', 'list');
     }
 
-    /**
-     * 数据创建
-     *
-     * @param $request_body
-     * @return \Illuminate\Database\Eloquent\Builder|Model
-     */
+    // 添加（可批量添加）
     public function store($request_body)
     {
+        if ($request_body && is_array($request_body) && array_values($request_body) === $request_body) {
+            return $this->model->newQuery()->insert($request_body);
+        }
         return $this->model->newQuery()->create($request_body);
     }
 
@@ -510,5 +542,39 @@ class BaseService
         }
 
         return $query->count('id');
+    }
+
+    // 批量保存，可添加、修改、删除
+    public function batchStore($request_body)
+    {
+        $condition = data_get($request_body, 'condition', []);
+        $data      = data_get($request_body, 'data', []);
+        if (!$condition) {
+            return [];
+        }
+        $oldIdArr = $this->model->newQuery()
+            ->where($condition)
+            ->select('id')
+            ->get()
+            ->pluck('id')
+            ->toArray();
+        $resArr   = [];
+        foreach ($data as $datum) {
+            if (isset($datum['id']) && $datum['id']) {
+                $model = $this->model->newQuery()->where('id', $datum['id'])->first();
+                try {
+                    $model->update($datum);
+                    $resArr[] = $model;
+                } catch (\Throwable $e) {
+                    Log::info($e->getMessage());
+                }
+            } else {
+                $model    = $this->model->newQuery()->create($datum);
+                $resArr[] = $model;
+            }
+        }
+        $idArr = collect($resArr)->pluck('id')->unique()->toArray();
+        $this->model->newQuery()->whereIn('id', array_diff($oldIdArr, $idArr))->delete();
+        return $resArr;
     }
 }

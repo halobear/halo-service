@@ -118,6 +118,23 @@ class BaseController extends Controller
         return success($ret, '启用成功');
     }
 
+    // 根据条件更新
+    public function updateByCondition()
+    {
+        $param = request()->get('param', '[]');
+        $param = json_decode($param, 1);
+        return success($this->service->updateByCondition($param));
+    }
+
+    // 批量保存，可添加、修改、删除
+    public function batchStore()
+    {
+        $request_body = request()->get('request_body', '[]');
+        $request_body = json_decode($request_body, 1);
+
+        return success($this->service->batchStore($request_body));
+    }
+
     /**
      * 表单验证
      * @param $rule

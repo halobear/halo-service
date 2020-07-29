@@ -46,22 +46,16 @@ class MakeBaseFileCommand extends Command
      */
     protected $description = '创建基础文件';
 
-    /**
-     * Execute the console command.
-     *
-     * @return void
-     */
     public function handle()
     {
         $name       = $this->argument('name');
-        $class_name = $this->qualifyClass($name);
-        $version    = $this->argument('version');
+        $version    = $this->argument('version') ?: 'V1';
         $model      = $this->argument('model') ?? 1;
-        $version ? $file_name = "$version/{$name}" : $name;
+        $file_name  = "$version/{$name}";
         if ($this->alreadyExists("/Http/Controllers/{$file_name}Controller")) {
             $this->error($name . ' already exists!');
 
-            return false;
+            return;
         }
 
         $model && $this->model($name);
