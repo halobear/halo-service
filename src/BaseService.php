@@ -94,6 +94,7 @@ class BaseService
                     }
 
 
+
                     if (isset($info['or_condition']) && $info['or_condition'] &&  is_array($info['or_condition'])) {
                         $query->where(function ($q) use ($info){
                             foreach ($info['or_condition'] as $or_c) {
