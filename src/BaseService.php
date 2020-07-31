@@ -92,6 +92,19 @@ class BaseService
                             $query->whereIn($item['field'], $item['list']);
                         }
                     }
+
+
+                    if (isset($info['or_condition']) && $info['or_condition'] &&  is_array($info['or_condition'])) {
+                        $query->where(function ($q) use ($info){
+                            foreach ($info['or_condition'] as $or_c) {
+                                if (isset($or_c['name']) && isset($or_c['operator']) && isset($or_c['value'])) {
+                                    $q->orWhere($or_c['name'], $or_c['operator'], $or_c['value']);
+                                }
+                            }
+                        });
+
+                    }
+
                 }
             );
         }
