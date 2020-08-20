@@ -591,4 +591,17 @@ class BaseService
         $this->model->newQuery()->whereIn('id', array_diff($oldIdArr, $idArr))->delete();
         return $resArr;
     }
+
+    // 原生sql查询 可自定义表前缀标识
+    public function raw($request_body)
+    {
+        $connection      = DB::connection();
+        $tablePrefix     = $connection->getTablePrefix();
+        $query           = data_get($request_body, 'query', '');
+        $bindings        = data_get($request_body, 'bindings', []);
+        $useReadPdo      = data_get($request_body, 'useReadPdo', true);
+        $tablePrefixFlag = data_get($request_body, 'tablePrefixFlag', 'wtw_');
+        $query           = str_replace($tablePrefixFlag, $tablePrefix, $query);
+        return $connection->select($query, $bindings, $useReadPdo);
+    }
 }

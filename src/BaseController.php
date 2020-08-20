@@ -135,6 +135,15 @@ class BaseController extends Controller
         return success($this->service->batchStore($request_body));
     }
 
+    // 原生sql查询 可自定义表前缀标识
+    public function raw()
+    {
+        $request_body = request()->get('request_body', '[]');
+        $request_body = json_decode($request_body, 1);
+
+        return success($this->service->raw($request_body));
+    }
+
     /**
      * 表单验证
      * @param $rule
