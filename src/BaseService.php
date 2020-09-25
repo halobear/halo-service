@@ -236,6 +236,7 @@ class BaseService
             $with          = data_get($request_body, 'with', []);
             $has_condition = data_get($request_body, 'has_condition', []);
             $select_raw    = data_get($request_body, 'select_raw', []);
+            $with_count    = data_get($request_body, 'with_count', []);
             $query         = $this->model->newQuery();
             foreach ($with as $info) {
                 $with_item = [
@@ -260,6 +261,20 @@ class BaseService
             $query->select($select);
             foreach ($select_raw as $item) {
                 $query->selectRaw($item);
+            }
+
+            foreach ($with_count as $info) {
+                if (isset($info['condition']) && $info['condition']) {
+                    $query->withCount(
+                        [
+                            $info['name'] => function ($query) use ($info) {
+                                $query->where($info['condition']);
+                            },
+                        ]
+                    );
+                } else {
+                    $query->withCount($info['name']);
+                }
             }
 
             foreach ($has_condition as $info) {
