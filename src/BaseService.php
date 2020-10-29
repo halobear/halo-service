@@ -163,7 +163,9 @@ class BaseService
         }
 
         // 总数
-        $total = $query->count('id');
+        $key = $this->model->getKeyName();
+        // 总数
+        $total = $query->count($key);
         $query->select($select);
         foreach ($select_raw as $item) {
             if (is_array($item) && isset($item['sql']) && isset($item['bindings'])) {
