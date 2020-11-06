@@ -29,6 +29,7 @@ class BaseService
         $per_page         = data_get($request_body, 'per_page', 1000000);
         $select           = data_get($request_body, 'select', ['*']);
         $select_raw       = data_get($request_body, 'select_raw', []);
+        $order_raw        = data_get($request_body, 'order_raw', []);
         $condition        = data_get($request_body, 'condition', request()->except(['request_body']) ?: []);
         $max_sort         = data_get($request_body, 'max_sort', 0);
         $where_in         = data_get($request_body, 'where_in', []);
@@ -186,6 +187,12 @@ class BaseService
                 );
             } else {
                 $query->withCount($info['name']);
+            }
+        }
+
+        if($order_raw){
+            foreach ($order_raw as $item) {
+                $query->orderByRaw($item);
             }
         }
 
