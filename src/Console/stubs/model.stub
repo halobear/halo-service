@@ -8,6 +8,21 @@ class {{modelName}} extends Model
 {
     protected $guarded = ['id'];
 
-    public $fillable = [
-    ];
+    public $fillable = [];
+
+    /**
+     * 为数组 / JSON 序列化准备日期。
+     *
+     * @param  DateTimeInterface  $date
+     * @return string
+     */
+    protected function serializeDate(DateTimeInterface $date)
+    {
+        $result = $date->format($this->dateFormat ?: 'Y-m-d H:i:s');
+        if ($result === '-0001-11-30 00:00:00') {
+            return '0000-00-00 00:00:00';
+        }
+
+        return $result;
+    }
 }
