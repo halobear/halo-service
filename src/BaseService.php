@@ -616,7 +616,7 @@ class BaseService
         return $resArr;
     }
 
-    // 原生sql查询 可自定义表前缀标识
+    // 原生sql 可自定义表前缀标识
     public function raw($request_body)
     {
         $connection      = DB::connection();
@@ -625,7 +625,15 @@ class BaseService
         $bindings        = data_get($request_body, 'bindings', []);
         $useReadPdo      = data_get($request_body, 'useReadPdo', true);
         $tablePrefixFlag = data_get($request_body, 'tablePrefixFlag', 'wtw_');
+        $method          = data_get($request_body, 'method', 'select');
         $query           = str_replace($tablePrefixFlag, $tablePrefix, $query);
+        if ($method === 'update') {
+            return $connection->update($query, $bindings);
+        } elseif ($method === 'insert') {
+            return $connection->insert($query, $bindings);
+        } elseif ($method === 'delete') {
+            return $connection->delete($query, $bindings);
+        }
         return $connection->select($query, $bindings, $useReadPdo);
     }
 }

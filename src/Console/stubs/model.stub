@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class {{modelName}} extends Model
 {
+    protected $table;
+
     protected $guarded = ['id'];
 
-    public $fillable = [];
+    protected $fillable = [];
 
     /**
      * 为数组 / JSON 序列化准备日期。
