@@ -66,6 +66,13 @@ class BaseService
             $with_item = [
                 $info['name'] => function ($query) use ($info) {
                     (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
+                    // orderByRaw
+                    if(isset($info['order_by_raw'])){
+                        $with_order_by_raw = $info['order_by_raw'];
+                        if ($with_order_by_raw && isset($with_order_by_raw['sql']) && $with_order_by_raw['sql']) {
+                            $query->orderByRaw($with_order_by_raw['sql'], $with_order_by_raw['bindings'] ?? []);
+                        }
+                    }
                     (isset($info['order_field']) && $info['order_field']) && $query->orderBy(
                         $info['order_field'],
                         $info['order_type'] ?? 'asc'
@@ -251,6 +258,13 @@ class BaseService
                 $with_item = [
                     $info['name'] => function ($query) use ($info) {
                         (isset($info['condition']) && $info['condition']) && $query->where($info['condition']);
+                        // orderByRaw
+                        if(isset($info['order_by_raw'])){
+                            $with_order_by_raw = $info['order_by_raw'];
+                            if ($with_order_by_raw && isset($with_order_by_raw['sql']) && $with_order_by_raw['sql']) {
+                                $query->orderByRaw($with_order_by_raw['sql'], $with_order_by_raw['bindings'] ?? []);
+                            }
+                        }
                         (isset($info['order_field']) && $info['order_field']) && $query->orderBy(
                             $info['order_field'],
                             $info['order_type'] ?? 'asc'
