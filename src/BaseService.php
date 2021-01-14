@@ -650,4 +650,22 @@ class BaseService
         }
         return $connection->select($query, $bindings, $useReadPdo);
     }
+
+    /**
+     * 自增
+     *
+     * @param $id
+     * @param $request_body
+     * @return bool
+     */
+    public function increment($id, $request_body)
+    {
+        $field = data_get($request_body, 'field');
+        $num   = data_get($request_body, 'num');
+        if ($field && $num) {
+            $this->model->newQuery()->where('id', $id)->increment($field, $num);
+        }
+
+        return true;
+    }
 }

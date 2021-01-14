@@ -144,6 +144,23 @@ class BaseController extends Controller
         return success($this->service->raw($request_body));
     }
 
+
+    /**
+     * 自增
+     *
+     * @param $id
+     * @return Response
+     */
+    public function increment($id)
+    {
+        $request_body = request()->get('request_body','[]');
+        $request_body = json_decode($request_body, 1);
+
+        $ret = $this->service->increment($id, $request_body);
+
+        return success($ret);
+    }
+
     /**
      * 表单验证
      * @param $rule
