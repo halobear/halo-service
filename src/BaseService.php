@@ -663,7 +663,9 @@ class BaseService
         $field = data_get($request_body, 'field');
         $num   = data_get($request_body, 'num');
         if ($field && $num) {
+            $this->model->timestamps = false;
             $this->model->newQuery()->where('id', $id)->increment($field, $num);
+            $this->model->timestamps = true;
         }
 
         return true;
