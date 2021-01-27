@@ -162,6 +162,22 @@ class BaseController extends Controller
     }
 
     /**
+     * 自减
+     *
+     * @param $id
+     * @return Response
+     */
+    public function decrement($id)
+    {
+        $request_body = request()->get('request_body','[]');
+        $request_body = json_decode($request_body, 1);
+
+        $ret = $this->service->decrement($id, $request_body);
+
+        return success($ret);
+    }
+
+    /**
      * 表单验证
      * @param $rule
      */
