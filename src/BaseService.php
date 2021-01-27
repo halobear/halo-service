@@ -670,4 +670,24 @@ class BaseService
 
         return true;
     }
+
+    /**
+     * 自减
+     *
+     * @param $id
+     * @param $request_body
+     * @return bool
+     */
+    public function decrement($id, $request_body)
+    {
+        $field = data_get($request_body, 'field');
+        $num   = data_get($request_body, 'num');
+        if ($field && $num) {
+            $this->model->timestamps = false;
+            $this->model->newQuery()->where('id', $id)->decrement($field, $num);
+            $this->model->timestamps = true;
+        }
+
+        return true;
+    }
 }
