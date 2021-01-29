@@ -114,6 +114,16 @@ class BaseService
 
                     }
 
+                    // whereRaw
+                    if(isset($info['where_raw']) && $info['where_raw']){
+
+                        foreach ($info['where_raw'] as $item) {
+                            if ($item && isset($item['sql']) && $item['sql']) {
+                                $query->whereRaw($item['sql'], $item['bindings'] ?? [], $item['boolean'] ?? 'and');
+                            }
+                        }
+                    }
+
                 }
             );
         }
